@@ -1,0 +1,8 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE IF NOT EXISTS transactions(
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    amount DECIMAL(12,2), 
+    type VARCHAR(10) NOT NULL CHECK (type IN ('CREDIT', 'DEBIT')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
