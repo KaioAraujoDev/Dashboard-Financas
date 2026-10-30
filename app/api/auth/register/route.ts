@@ -2,7 +2,47 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import disposableDomains from 'disposable-email-domains';
 import dns from 'dns/promises';
+import bcrypt from 'bcrypt';
+
 dns.setServers(['8.8.8.8', '1.1.1.1']);
+
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Realiza o cadastro de um novo usuário
+ *     description: Valida dados, e-mail temporário, DNS e salva o usuário com senha criptografada (bcrypt)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: João Silva
+ *               email:
+ *                 type: string
+ *                 example: joao@email.com
+ *               password:
+ *                 type: string
+ *                 example: SenhaForte123!
+ *     responses:
+ *       201:
+ *         description: Usuário cadastrado com sucesso.
+ *       400:
+ *         description: Erro de validação (dados inválidos, e-mail temporário ou domínio inexistente).
+ *       409:
+ *         description: E-mail já cadastrado na base.
+ *       500:
+ *         description: Erro interno no servidor.
+ */   
+
 
 interface authData {
     name: string,
@@ -118,11 +158,20 @@ export async function POST(request:any){
                 "sucess": validateObject.sucess
             },{status:validateObject.status});
         }
-  
+        
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(authUserData.password,saltRounds);
+
+        const insertQuery = `
+            INSERT INTO users(name, email,password)
+            VALUES ($1,$2,$3)
+        `
+        await pool.query(insertQuery,[authUserData.name,authUserData.email,hashedPassword])
+        
         return NextResponse.json({
             "sucess" : true,
             "message" : "cadastro realizado!"
-        },{status:200})
+        },{status:201})
 
     } catch (error) {
         console.error("Erro ao processar request:", error);

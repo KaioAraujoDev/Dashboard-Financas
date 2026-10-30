@@ -1,5 +1,9 @@
+
 export default function Home() {
   return (
-    <p>teste</p>
+    <div>
+      <a href="/cadastro-usuario">Registrar</a>
+      <a href="/login">Logar</a>
+    </div>
   );
 }
