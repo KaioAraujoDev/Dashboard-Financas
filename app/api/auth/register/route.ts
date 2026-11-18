@@ -89,7 +89,7 @@ const isValidEmail = (email:string) =>{
 }
 
 const validateFields = async (authUserData:authData) =>{
-
+    
     if(authUserData.email.length >= 50){
         return {
             sucess:false,
